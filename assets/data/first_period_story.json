@@ -1,0 +1,120 @@
+{
+ "id": "first_period",
+ "title": "My First Period",
+ "description": "Navigating your very first menstruation experience with comfort, facts, and gentle confidence.",
+ "coverImage": "assets/images/stories/first_period_cover.png",
+ "category": "Menstruation",
+ "xpReward": 20,
+ "scenes": [
+ {
+ "id": "scene_1",
+ "backgroundImage": "assets/images/backgrounds/bedroom.png",
+ "characterImage": "assets/images/avatar/worried.png",
+ "characterExpression": "worried",
+ "dialogue": "Something feels different today... I noticed a small reddish-brown spot on my underwear and my belly feels a bit tight. What should I do?",
+ "choices": [
+ {
+ "id": "choice_1_1",
+ "text": "Talk to someone I trust (Mom, older sister, guardian or school nurse)",
+ "nextSceneId": "scene_2_trust",
+ "learningScore": 10,
+ "educationalNote": "Talking openly with a trusted adult helps you get pads, comfort, and warm support right away!"
+ },
+ {
+ "id": "choice_1_2",
+ "text": "Check a safe learning guide or Bloom AI",
+ "nextSceneId": "scene_2_learn",
+ "learningScore": 10,
+ "educationalNote": "Getting accurate health facts removes fear and lets you know your body is growing completely normally!"
+ },
+ {
+ "id": "choice_1_3",
+ "text": "Feel embarrassed and hide it",
+ "nextSceneId": "scene_2_reassure",
+ "learningScore": 5,
+ "educationalNote": "It is totally natural to feel shy at first, but remember: menstruation happens to every girl and is a milestone of healthy growth!"
+ }
+ ]
+ },
+ {
+ "id": "scene_2_trust",
+ "backgroundImage": "assets/images/backgrounds/cozy_room.png",
+ "characterImage": "assets/images/avatar/relieved.png",
+ "characterExpression": "relieved",
+ "dialogue": "You reach out to someone you trust. They smile warmly, give you a comforting hug, and hand you your first soft menstrual pad!",
+ "choices": [
+ {
+ "id": "choice_2_1",
+ "text": "Ask how to wear a pad step-by-step",
+ "nextSceneId": "scene_3_pad_guide",
+ "learningScore": 10,
+ "educationalNote": "Unfold the pad, remove the sticky strip backing, and stick it snugly onto your underwear."
+ }
+ ]
+ },
+ {
+ "id": "scene_2_learn",
+ "backgroundImage": "assets/images/backgrounds/library.png",
+ "characterImage": "assets/images/avatar/thinking.png",
+ "characterExpression": "thinking",
+ "dialogue": "You open BloomTale! You discover that a period is simply your body's natural cycle preparing for growing up.",
+ "choices": [
+ {
+ "id": "choice_2_2",
+ "text": "Learn how to prepare a small hygiene pouch",
+ "nextSceneId": "scene_3_pouch",
+ "learningScore": 10,
+ "educationalNote": "Keeping 2 pads and spare underwear in your bag keeps you stress-free wherever you go."
+ }
+ ]
+ },
+ {
+ "id": "scene_2_reassure",
+ "backgroundImage": "assets/images/backgrounds/bedroom.png",
+ "characterImage": "assets/images/avatar/happy.png",
+ "characterExpression": "happy",
+ "dialogue": "Your companion avatar reminds you: 'You are safe, strong, and surrounded by care. Millions of girls experience this every month!'",
+ "choices": [
+ {
+ "id": "choice_2_3",
+ "text": "Take a deep breath and prepare a pad",
+ "nextSceneId": "scene_3_pad_guide",
+ "learningScore": 10,
+ "educationalNote": "Deep breathing calms emotional waves and boosts your confidence."
+ }
+ ]
+ },
+ {
+ "id": "scene_3_pad_guide",
+ "backgroundImage": "assets/images/backgrounds/bathroom.png",
+ "characterImage": "assets/images/avatar/confident.png",
+ "characterExpression": "confident",
+ "dialogue": "Awesome! You now know how to wear a pad, change it every 4-6 hours, wrap used ones neatly in paper, and wash your hands. How do you feel now?",
+ "choices": [
+ {
+ "id": "choice_3_1",
+ "text": "I feel confident, prepared, and proud of my body!",
+ "nextSceneId": "completion",
+ "learningScore": 10,
+ "educationalNote": "Congratulations on completing your first story module!"
+ }
+ ]
+ },
+ {
+ "id": "scene_3_pouch",
+ "backgroundImage": "assets/images/backgrounds/cozy_room.png",
+ "characterImage": "assets/images/avatar/confident.png",
+ "characterExpression": "confident",
+ "dialogue": "You packed your cute hygiene kit into your school bag! You feel empowered and ready to handle any day.",
+ "choices": [
+ {
+ "id": "choice_3_2",
+ "text": "Finish story and claim XP",
+ "nextSceneId": "completion",
+ "learningScore": 10,
+ "educationalNote": "You earned the 'Period Pro' milestone progress!"
+ }
+ ]
+ }
+ ]
+}

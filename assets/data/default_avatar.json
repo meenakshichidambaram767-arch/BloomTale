@@ -1,0 +1,15 @@
+{
+ "id": "default_avatar",
+ "name": "Bloomie",
+ "description": "Your friendly, supportive growth companion who walks alongside you through every story.",
+ "expressions": {
+ "happy": "assets/images/avatar/happy.png",
+ "worried": "assets/images/avatar/worried.png",
+ "embarrassed": "assets/images/avatar/embarrassed.png",
+ "thinking": "assets/images/avatar/thinking.png",
+ "relieved": "assets/images/avatar/relieved.png",
+ "confident": "assets/images/avatar/confident.png",
+ "sad": "assets/images/avatar/sad.png",
+ "surprised": "assets/images/avatar/surprised.png"
+ }
+}
