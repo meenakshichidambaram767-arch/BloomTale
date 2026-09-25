@@ -50,7 +50,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
-    - assets/images/logo.png
     - assets/images/avatar/
     - assets/images/avatar/ananya/
     - assets/images/avatar/meera/
@@ -59,6 +58,7 @@ flutter:
     - assets/images/splash/
     - assets/images/stories/
     - assets/images/backgrounds/
+    - assets/images/fluff/
     - assets/data/
 
 
