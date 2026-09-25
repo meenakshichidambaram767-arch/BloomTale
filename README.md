@@ -4,7 +4,7 @@
 
 BloomTale is an **AI-powered educational mobile application** designed to help adolescent girls understand puberty, menstruation, emotional changes, hygiene, confidence, and personal growth in a **safe, relatable, and engaging way**.
 
-Instead of presenting health education as long, clinical articles, BloomTale uses **interactive storytelling, relatable situations, meaningful choices, an AI companion, and personal progress** to create a learning experience that feels natural and memorable.
+Instead of presenting health education as long, clinical articles, BloomTale uses **interactive storytelling, relatable situations, meaningful choices, an AI companion, and personal progress** to create a learning experience that feels natural.
 
 ---
 
