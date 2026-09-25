@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../screens/book_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/welcome_screen.dart';
 import '../screens/onboarding_screen.dart';
@@ -114,6 +115,17 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/bloom/journal',
       builder: (context, state) => const BloomJournalScreen(),
+    ),
+
+    // Book Experience Route
+    GoRoute(
+      path: '/books/:bookId',
+      builder: (context, state) {
+        final bookId = state.pathParameters['bookId'] ?? 'bursting_myths';
+        final pageIndexStr = state.uri.queryParameters['pageIndex'];
+        final pageIndex = int.tryParse(pageIndexStr ?? '0') ?? 0;
+        return BookScreen(bookId: bookId, initialPageIndex: pageIndex);
+      },
     ),
 
     // Sub-screens & details

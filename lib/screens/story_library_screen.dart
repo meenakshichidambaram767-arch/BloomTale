@@ -56,6 +56,93 @@ class StoryLibraryScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
+
+              // Featured Storybook Banner (Bursting Myths Book)
+              GestureDetector(
+                onTap: () => context.push('/books/bursting_myths'),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAF4EB), // Storybook paper background
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFD8C3A5), width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: BloomTheme.primaryRose.withValues(alpha: 0.15),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: BloomTheme.primaryRose.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                'FEATURED STORYBOOK 📖',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.8,
+                                  color: BloomTheme.primaryRose,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Bursting Myths',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: BloomTheme.darkText,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Interactive storybook with page-turning stories on period myths & body facts.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: BloomTheme.subText,
+                                height: 1.3,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            const Row(
+                              children: [
+                                Text(
+                                  'OPEN BOOK 🌸',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: BloomTheme.primaryRose,
+                                  ),
+                                ),
+                                SizedBox(width: 4),
+                                Icon(Icons.arrow_forward_rounded, size: 14, color: BloomTheme.primaryRose),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const FloatingMascotWidget(
+                        assetPath: 'assets/images/fluff_reading.png',
+                        width: 78,
+                        height: 78,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
 
               // Category Filter Chips
