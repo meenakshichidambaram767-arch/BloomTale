@@ -34,9 +34,9 @@ class MockStoryService implements StoryService {
   static const Story curdMythStory = Story(
     id: 'curd_myth',
     title: 'Curd & Period Myth',
-    category: 'Nutrition & Daily Care',
+    category: 'Myths',
     description: 'Should you avoid curd during your period? Discover the science behind period food beliefs.',
-    starringCharacterId: 'ananya',
+    starringCharacterId: 'meera',
     xpReward: 20,
     scenarioAsset: 'assets/images/stories/curd_story_01_scenario_ananya.png',
     choiceAsset: 'assets/images/stories/curd_story_02_choice_ananya.png',

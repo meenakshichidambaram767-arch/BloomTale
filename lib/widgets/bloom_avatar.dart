@@ -17,6 +17,9 @@ class BloomAvatar extends StatelessWidget {
 
   String _getImageAssetPath() {
     final cleanAvatarId = avatarId.toLowerCase();
+    if (['ananya', 'meera', 'lavanya', 'kiara'].contains(cleanAvatarId)) {
+      return 'assets/images/avatar/${cleanAvatarId}_portrait.png';
+    }
     switch (activity.toLowerCase()) {
       case 'reading':
         return 'assets/images/fluff_reading.png';

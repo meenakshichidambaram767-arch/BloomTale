@@ -109,13 +109,33 @@ class StoryLibraryScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${filteredStories.length} ${filteredStories.length == 1 ? "Story" : "Stories"} Available',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: BloomTheme.subText,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.auto_awesome_rounded, size: 18, color: BloomTheme.primaryRose),
+                          SizedBox(width: 6),
+                          Text(
+                            'Bursting Myths',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: BloomTheme.darkText,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${filteredStories.length} ${filteredStories.length == 1 ? "Story" : "Stories"} addressing period & body myths',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: BloomTheme.subText,
+                        ),
+                      ),
+                    ],
                   ),
                   if (selectedCategory != 'All')
                     GestureDetector(
@@ -131,11 +151,12 @@ class StoryLibraryScreen extends ConsumerWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
               // Story List
               ...filteredStories.map((story) {
                 final isCompleted = story.isCompleted;
+                final characterName = story.starringCharacterId[0].toUpperCase() + story.starringCharacterId.substring(1);
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
@@ -158,7 +179,9 @@ class StoryLibraryScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 4,
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -176,10 +199,31 @@ class StoryLibraryScreen extends ConsumerWidget {
                                           ),
                                         ),
                                       ),
-                                      if (isCompleted) ...[
-                                        const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: BloomTheme.secondaryPeach.withValues(alpha: 0.4),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.face_rounded, size: 12, color: BloomTheme.primaryRose),
+                                            const SizedBox(width: 3),
+                                            Text(
+                                              'Starring $characterName',
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: BloomTheme.primaryRose,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (isCompleted)
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
                                             color: BloomTheme.mintFresh.withValues(alpha: 0.3),
                                             borderRadius: BorderRadius.circular(10),
@@ -200,7 +244,6 @@ class StoryLibraryScreen extends ConsumerWidget {
                                             ],
                                           ),
                                         ),
-                                      ],
                                     ],
                                   ),
                                   const SizedBox(height: 6),
