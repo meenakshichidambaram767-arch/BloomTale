@@ -53,14 +53,20 @@ class StoryCompletionScreen extends ConsumerWidget {
               ),
               const Spacer(),
               BloomButton(
-                text: 'Return to Home Dashboard',
-                onPressed: () => context.go('/home'),
+                text: 'Return to Storybook 📖',
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/books/bursting_myths');
+                  }
+                },
               ),
               const SizedBox(height: 12),
               BloomButton(
-                text: 'Explore More Stories',
+                text: 'Return to Home Dashboard',
                 style: BloomButtonStyle.outline,
-                onPressed: () => context.go('/stories'),
+                onPressed: () => context.go('/home'),
               ),
               const SizedBox(height: 16),
             ],

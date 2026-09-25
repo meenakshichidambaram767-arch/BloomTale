@@ -32,11 +32,11 @@ class Book {
   });
 }
 
-// Sample configuration for Bursting Myths book
+// Bursting Myths Book Configuration
 const burstingMythsBook = Book(
   id: 'bursting_myths',
-  title: 'Bursting Myths',
-  subtitle: 'Stories that help you question what you\'ve heard.',
+  title: 'BURSTING MYTHS',
+  subtitle: 'Question what you\'ve heard.\nDiscover what is true.',
   coverAsset: 'assets/images/backgrounds/floral_frame_bg.jpg',
   pages: [
     BookStoryPage(
