@@ -153,10 +153,17 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
                         controller: _bookFlipController,
                         pageSize: pageSize,
                         pages: pages,
-                        material: BookFlipMaterial.paper,
+                        material: const BookFlipMaterial(
+                          stiffness: 0.28,    // Supple paper bend
+                          weight: 0.42,       // Realistic corner droop
+                          gloss: 0.86,        // Coated gloss reflection
+                          translucency: 0.16, // Gentle translucency
+                          thickness: 1.6,     // Defined realistic page edge
+                        ),
                         physics: const BookFlipPhysics(
-                          springStiffness: 110,
-                          commitThreshold: 0.35,
+                          springStiffness: 140,
+                          commitThreshold: 0.32,
+                          commitVelocity: 0.9,
                         ),
                         onSpreadChanged: (spread) {
                           ref.read(bookCurrentSpreadProvider(widget.bookId).notifier).state = spread;
@@ -168,7 +175,7 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
               ),
             ),
 
-            // Subtle Programmatic Navigation Bar at bottom
+            // Subtle Programmatic Navigation Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               child: Row(
@@ -176,7 +183,7 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
                 children: [
                   TextButton.icon(
                     icon: const Icon(Icons.arrow_back_rounded, size: 16),
-                    label: const Text('PREVIOUS'),
+                    label: const Text('PREVIOUS PAGE'),
                     style: TextButton.styleFrom(
                       foregroundColor: BloomTheme.darkText,
                       textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
@@ -188,7 +195,7 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
                     },
                   ),
                   TextButton.icon(
-                    label: const Text('NEXT'),
+                    label: const Text('NEXT PAGE'),
                     icon: const Icon(Icons.arrow_forward_rounded, size: 16),
                     style: TextButton.styleFrom(
                       foregroundColor: BloomTheme.primaryRose,
@@ -226,6 +233,7 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
         book.pages[0],
         _findStory(storyList, book.pages[0].storyId),
         1,
+        "Many believe cold foods like curd stop period flow. Discover what science says!",
       ),
 
       // Page 2: Story 2 (Hair Washing Myth - Meera)
@@ -234,6 +242,7 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
         book.pages[1],
         _findStory(storyList, book.pages[1].storyId),
         2,
+        "Is washing your hair during periods unsafe? Learn the hygiene facts with Meera!",
       ),
 
       // Page 3: Story 3 (Exercise Myth - Kiara)
@@ -242,6 +251,7 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
         book.pages[2],
         _findStory(storyList, book.pages[2].storyId),
         3,
+        "Does physical activity worsen period pain or release natural endorphins?",
       ),
 
       // Page 4: Closing Book-End Celebration Page
@@ -268,7 +278,7 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
     );
   }
 
-  // Page 0: Illustrated Book Cover
+  // Page 0: Illustrated Book Cover with Floral Frame Background
   Widget _buildCoverPage(BuildContext context, Book book) {
     return Container(
       decoration: BoxDecoration(
@@ -277,69 +287,130 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
         border: Border.all(color: const Color(0xFFDCC8B0), width: 3),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 15,
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 18,
             offset: const Offset(4, 8),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(28),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const BloomLogo(size: 64, isHero: true),
-          const SizedBox(height: 20),
-
-          Text(
-            book.title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-              color: BloomTheme.darkText,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Stack(
+          children: [
+            // Floral background image overlay
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.12,
+                child: Image.asset(
+                  book.coverAsset,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.all(26),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: BloomTheme.primaryRose.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: BloomTheme.primaryRose.withValues(alpha: 0.3)),
+                    ),
+                    child: const Text(
+                      'BLOOMTALE INTERACTIVE BOOK',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                        color: BloomTheme.primaryRose,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
-          Text(
-            book.subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 14,
-              fontStyle: FontStyle.italic,
-              color: BloomTheme.subText,
-              height: 1.4,
+                  const BloomLogo(size: 68, isHero: true),
+                  const SizedBox(height: 20),
+
+                  Text(
+                    book.title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.4,
+                      color: BloomTheme.darkText,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE5D5C5)),
+                    ),
+                    child: Text(
+                      book.subtitle,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                        color: BloomTheme.subText,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.local_florist_rounded, size: 16, color: BloomTheme.primaryRose),
+                      SizedBox(width: 8),
+                      Text('🌸   🌿   🌸', style: TextStyle(fontSize: 12)),
+                      SizedBox(width: 8),
+                      Icon(Icons.local_florist_rounded, size: 16, color: BloomTheme.primaryRose),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.touch_app_rounded, size: 16, color: BloomTheme.primaryRose),
+                      SizedBox(width: 6),
+                      Text(
+                        'SWIPE LEFT TO OPEN PAGE →',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                          color: BloomTheme.primaryRose,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 28),
-
-          const Text(
-            '🌸  🌸  🌸',
-            style: TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 28),
-
-          const Text(
-            'SWIPE LEFT TO TURN PAGE →',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-              color: BloomTheme.primaryRose,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  // Storybook Story Page Widget
+  // Storybook Story Page Widget with Chapter Header & Curiosity Teaser
   Widget _buildStoryPageWidget(
     BuildContext context,
     BookStoryPage pageData,
     Story story,
     int pageNum,
+    String curiosityTeaser,
   ) {
     final isCompleted = story.isCompleted;
     final characterName = pageData.characterId[0].toUpperCase() + pageData.characterId.substring(1);
@@ -351,47 +422,68 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
         border: Border.all(color: const Color(0xFFE8DBCA), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 15,
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
             offset: const Offset(2, 6),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // Page Header
+          // Chapter Header Ribbon
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: BloomTheme.accentLavender.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  pageData.theme.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                    color: BloomTheme.darkText,
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: BloomTheme.primaryRose,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      'CHAPTER 0$pageNum',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: BloomTheme.accentLavender.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      pageData.theme.toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                        color: BloomTheme.darkText,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               if (isCompleted)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: BloomTheme.mintFresh.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_rounded, size: 13, color: BloomTheme.sageGreen),
-                      SizedBox(width: 4),
+                      Icon(Icons.check_circle_rounded, size: 12, color: BloomTheme.sageGreen),
+                      SizedBox(width: 3),
                       Text(
                         '✓ Explored',
                         style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: BloomTheme.darkText),
@@ -403,33 +495,45 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
           ),
           const Spacer(),
 
-          // Pure Floating Mascot Illustration (No Box Container!)
-          AnimatedBuilder(
-            animation: _floatingAnimation,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, _floatingAnimation.value),
-                child: child,
-              );
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Image.asset(
-                pageData.mascotAsset,
-                width: 125,
-                height: 125,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => const Icon(
-                  Icons.auto_awesome_rounded,
-                  size: 70,
-                  color: BloomTheme.primaryRose,
+          // Mascot Stage with Sunburst Ambient Radial Halo
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  BloomTheme.secondaryPeach.withValues(alpha: 0.5),
+                  BloomTheme.softCream.withValues(alpha: 0.1),
+                ],
+              ),
+            ),
+            child: AnimatedBuilder(
+              animation: _floatingAnimation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, _floatingAnimation.value),
+                  child: child,
+                );
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  pageData.mascotAsset,
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 70,
+                    color: BloomTheme.primaryRose,
+                  ),
                 ),
               ),
             ),
           ),
           const Spacer(),
 
-          // Title
+          // Story Title
           Text(
             pageData.title,
             textAlign: TextAlign.center,
@@ -440,29 +544,93 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
               height: 1.3,
             ),
           ),
-          const SizedBox(height: 8),
-
-          // Tagline Quote
-          Text(
-            '"${pageData.tagline}"',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 13,
-              fontStyle: FontStyle.italic,
-              color: BloomTheme.subText,
-              height: 1.4,
-            ),
-          ),
           const SizedBox(height: 6),
 
-          // Character Tag
-          Text(
-            '— Starring $characterName',
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: BloomTheme.primaryRose,
+          // Tagline Quote Box
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: BloomTheme.borderSoft),
             ),
+            child: Text(
+              '"${pageData.tagline}"',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                color: BloomTheme.subText,
+                height: 1.3,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Curiosity Sneak Peek Teaser Box
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF8E7), // Soft parchment yellow
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFF3E0B5)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.lightbulb_rounded, size: 16, color: Color(0xFFD97706)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    curiosityTeaser,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF78350F),
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Character & Reward Badges
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '— Starring $characterName',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: BloomTheme.primaryRose,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: BloomTheme.warmSun.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star_rounded, size: 12, color: Color(0xFFD97706)),
+                    const SizedBox(width: 3),
+                    Text(
+                      '+${story.xpReward} XP',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF92400E),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const Spacer(),
 
@@ -471,7 +639,6 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
             text: isCompleted ? 'READ AGAIN 🌸' : 'READ STORY 🌸',
             style: BloomButtonStyle.primary,
             onPressed: () {
-              // Save current page index in query parameters so returning restores exact page!
               context.push('/stories/${pageData.storyId}?fromBook=bursting_myths&pageIndex=$pageNum');
             },
           ),
@@ -589,3 +756,4 @@ class _BookScreenState extends ConsumerState<BookScreen> with SingleTickerProvid
     );
   }
 }
+
