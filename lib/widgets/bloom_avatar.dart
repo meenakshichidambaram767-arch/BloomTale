@@ -97,6 +97,7 @@ class BloomIllustrationCard extends StatelessWidget {
   final String subtitle;
   final String? badgeText;
   final double height;
+  final Widget? customRightWidget;
 
   const BloomIllustrationCard({
     super.key,
@@ -106,6 +107,7 @@ class BloomIllustrationCard extends StatelessWidget {
     required this.subtitle,
     this.badgeText,
     this.height = 180,
+    this.customRightWidget,
   });
 
   @override
@@ -177,12 +179,13 @@ class BloomIllustrationCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          BloomAvatar(
-            avatarId: avatarId,
-            activity: activity,
-            size: 90,
-            showBadge: true,
-          ),
+          customRightWidget ??
+              BloomAvatar(
+                avatarId: avatarId,
+                activity: activity,
+                size: 90,
+                showBadge: true,
+              ),
         ],
       ),
     );
