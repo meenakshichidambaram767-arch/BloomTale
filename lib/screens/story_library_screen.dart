@@ -153,190 +153,245 @@ class StoryLibraryScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 14),
 
-              // Story List
+              // Story List with Mascot Overlay Cards
               ...filteredStories.map((story) {
                 final isCompleted = story.isCompleted;
-                final characterName = story.starringCharacterId[0].toUpperCase() + story.starringCharacterId.substring(1);
+                final isMeera = story.starringCharacterId.toLowerCase() == 'meera';
+                final characterName = isMeera ? 'Meera' : 'Ananya';
+                final mascotAsset = isMeera ? 'assets/images/fluff_music.png' : 'assets/images/fluff_reading.png';
+
+                // Mascot ambient glow colors
+                final gradientColors = isMeera
+                    ? [const Color(0xFFF3E8FF), const Color(0xFFFAFAFF), Colors.white] // Lavender / Soft Violet for Meera
+                    : [const Color(0xFFFFF0F3), const Color(0xFFFFF8F9), Colors.white]; // Soft Petal Pink for Ananya
+
+                final badgeColor = isMeera ? const Color(0xFF7C3AED) : BloomTheme.primaryRose;
+                final badgeBg = isMeera
+                    ? const Color(0xFFDDD6FE).withValues(alpha: 0.5)
+                    : BloomTheme.secondaryPeach.withValues(alpha: 0.4);
 
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: BloomCard(
-                    onTap: () => context.push('/stories/${story.id}'),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            BloomAvatar(
-                              avatarId: story.starringCharacterId,
-                              activity: 'reading',
-                              size: 64,
-                              showBadge: true,
+                  padding: const EdgeInsets.only(bottom: 22, top: 8),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // Card Body
+                      BloomCard(
+                        onTap: () => context.push('/stories/${story.id}'),
+                        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: gradientColors,
+                              begin: Alignment.topRight,
+                              end: Alignment.bottomLeft,
                             ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Wrap(
-                                    spacing: 6,
-                                    runSpacing: 4,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: BloomTheme.accentLavender.withValues(alpha: 0.5),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          story.category.toUpperCase(),
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: BloomTheme.darkText,
-                                            letterSpacing: 0.5,
-                                          ),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Top Tags Row (leaving space on the right for mascot overlay)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 70),
+                                child: Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: BloomTheme.accentLavender.withValues(alpha: 0.4),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        story.category.toUpperCase(),
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: BloomTheme.darkText,
+                                          letterSpacing: 0.5,
                                         ),
                                       ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: badgeBg,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            isMeera ? Icons.music_note_rounded : Icons.menu_book_rounded,
+                                            size: 12,
+                                            color: badgeColor,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Starring $characterName',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: badgeColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (isCompleted)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: BloomTheme.secondaryPeach.withValues(alpha: 0.4),
-                                          borderRadius: BorderRadius.circular(12),
+                                          color: BloomTheme.mintFresh.withValues(alpha: 0.3),
+                                          borderRadius: BorderRadius.circular(10),
                                         ),
-                                        child: Row(
+                                        child: const Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            const Icon(Icons.face_rounded, size: 12, color: BloomTheme.primaryRose),
-                                            const SizedBox(width: 3),
+                                            Icon(Icons.check_circle_rounded, size: 12, color: BloomTheme.sageGreen),
+                                            SizedBox(width: 3),
                                             Text(
-                                              'Starring $characterName',
-                                              style: const TextStyle(
+                                              'Completed',
+                                              style: TextStyle(
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.bold,
-                                                color: BloomTheme.primaryRose,
+                                                color: BloomTheme.darkText,
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      if (isCompleted)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: BloomTheme.mintFresh.withValues(alpha: 0.3),
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          child: const Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(Icons.check_circle_rounded, size: 12, color: BloomTheme.sageGreen),
-                                              SizedBox(width: 3),
-                                              Text(
-                                                'Completed',
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: BloomTheme.darkText,
-                                                ),
-                                              ),
-                                            ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Title
+                              Text(
+                                story.title,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: BloomTheme.darkText,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Description
+                              Text(
+                                story.description,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: BloomTheme.subText,
+                                  height: 1.4,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Badges: Estimated Read Time & Reward Points
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: BloomTheme.sandBeige.withValues(alpha: 0.5),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.access_time_rounded, size: 13, color: BloomTheme.subText),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '3 min read',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: BloomTheme.subText.withValues(alpha: 0.9),
                                           ),
                                         ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    story.title,
-                                    style: const TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
-                                      color: BloomTheme.darkText,
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: BloomTheme.warmSun.withValues(alpha: 0.5),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.star_rounded, size: 13, color: Color(0xFFD97706)),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '+${story.xpReward} XP',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF92400E),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          story.description,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: BloomTheme.subText,
-                            height: 1.4,
+                              const SizedBox(height: 14),
+
+                              // Action Button
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: BloomButton(
+                                      text: isCompleted ? 'Replay Story' : 'Start Story',
+                                      icon: isCompleted ? Icons.replay_rounded : Icons.play_arrow_rounded,
+                                      style: isCompleted ? BloomButtonStyle.outline : BloomButtonStyle.primary,
+                                      onPressed: () => context.push('/stories/${story.id}'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 14),
+                      ),
 
-                        // Badges: Estimated Read Time & Reward Points
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: BloomTheme.sandBeige.withValues(alpha: 0.6),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.access_time_rounded, size: 13, color: BloomTheme.subText),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '3 min read',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: BloomTheme.subText.withValues(alpha: 0.9),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      // Mascot Floating Overlay Image (Top-Right)
+                      Positioned(
+                        top: -22,
+                        right: 12,
+                        child: IgnorePointer(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isMeera ? const Color(0xFF7C3AED) : BloomTheme.primaryRose)
+                                      .withValues(alpha: 0.25),
+                                  blurRadius: 16,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: BloomTheme.warmSun.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.star_rounded, size: 13, color: Color(0xFFD97706)),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '+${story.xpReward} XP',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF92400E),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            child: Image.asset(
+                              mascotAsset,
+                              width: 85,
+                              height: 85,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const SizedBox.shrink();
+                              },
                             ),
-                          ],
+                          ),
                         ),
-                        const SizedBox(height: 14),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              child: BloomButton(
-                                text: isCompleted ? 'Replay Story' : 'Start Story',
-                                icon: isCompleted ? Icons.replay_rounded : Icons.play_arrow_rounded,
-                                style: isCompleted ? BloomButtonStyle.outline : BloomButtonStyle.primary,
-                                onPressed: () => context.push('/stories/${story.id}'),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 );
               }),
