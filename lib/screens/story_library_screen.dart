@@ -361,33 +361,15 @@ class StoryLibraryScreen extends ConsumerWidget {
                         ),
                       ),
 
-                      // Mascot Floating Overlay Image (Top-Right)
+                      // Pure Floating Mascot Overlay Image (Top-Right, No Box!)
                       Positioned(
-                        top: -22,
-                        right: 12,
+                        top: -24,
+                        right: 10,
                         child: IgnorePointer(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (isMeera ? const Color(0xFF7C3AED) : BloomTheme.primaryRose)
-                                      .withValues(alpha: 0.25),
-                                  blurRadius: 16,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: Image.asset(
-                              mascotAsset,
-                              width: 85,
-                              height: 85,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const SizedBox.shrink();
-                              },
-                            ),
+                          child: FloatingMascotWidget(
+                            assetPath: mascotAsset,
+                            width: 92,
+                            height: 92,
                           ),
                         ),
                       ),
@@ -404,4 +386,72 @@ class StoryLibraryScreen extends ConsumerWidget {
     );
   }
 }
+
+class FloatingMascotWidget extends StatefulWidget {
+  final String assetPath;
+  final double width;
+  final double height;
+
+  const FloatingMascotWidget({
+    super.key,
+    required this.assetPath,
+    this.width = 92,
+    this.height = 92,
+  });
+
+  @override
+  State<FloatingMascotWidget> createState() => _FloatingMascotWidgetState();
+}
+
+class _FloatingMascotWidgetState extends State<FloatingMascotWidget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 2200),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: 0, end: -7).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _animation.value),
+          child: child,
+        );
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Image.asset(
+          widget.assetPath,
+          width: widget.width,
+          height: widget.height,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+        ),
+      ),
+    );
+  }
+}
+
 
