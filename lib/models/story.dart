@@ -1,16 +1,4 @@
-enum StoryStage {
-  scenario,
-  choice,
-  consequence,
-  bloomFact,
-  completed,
-}
-
-enum StoryChoiceKey {
-  a,
-  b,
-  c,
-}
+enum StorySceneType { narrative, decision, consequence, reflection, bloomFact }
 
 class StoryChoice {
   final String id;
@@ -23,75 +11,87 @@ class StoryChoice {
     required this.id,
     required this.text,
     required this.nextSceneId,
-    required this.learningScore,
+    this.learningScore = 10,
     this.educationalNote,
   });
 
-  factory StoryChoice.fromJson(Map<String, dynamic> json) {
-    return StoryChoice(
-      id: json['id'] as String,
-      text: json['text'] as String,
-      nextSceneId: json['nextSceneId'] as String,
-      learningScore: (json['learningScore'] as int?) ?? 10,
-      educationalNote: json['educationalNote'] as String?,
-    );
-  }
+  factory StoryChoice.fromJson(Map<String, dynamic> json) => StoryChoice(
+    id: json['id'] as String,
+    text: json['text'] as String,
+    nextSceneId: json['nextSceneId'] as String,
+    learningScore: (json['learningScore'] as int?) ?? 10,
+    educationalNote: json['educationalNote'] as String?,
+  );
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'text': text,
-      'nextSceneId': nextSceneId,
-      'learningScore': learningScore,
-      'educationalNote': educationalNote,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'text': text,
+    'nextSceneId': nextSceneId,
+    'learningScore': learningScore,
+    'educationalNote': educationalNote,
+  };
 }
 
 class StoryScene {
   final String id;
-  final String backgroundImage;
-  final String characterImage;
+  final StorySceneType type;
+  final String title;
+  final String narration;
+  final String dialogue;
   final String characterId;
   final String characterExpression;
-  final String dialogue;
+  final String visualDirection;
+  final String animationDirection;
+  final String? nextSceneId;
   final List<StoryChoice> choices;
+  final String? bloomFact;
+  final String? myth;
+  final String? fact;
+  final String? completionMessage;
 
   const StoryScene({
     required this.id,
-    required this.backgroundImage,
-    required this.characterImage,
+    this.type = StorySceneType.narrative,
+    this.title = '',
+    this.narration = '',
+    this.dialogue = '',
     this.characterId = 'ananya',
     this.characterExpression = 'happy',
-    required this.dialogue,
-    required this.choices,
+    this.visualDirection = '',
+    this.animationDirection = '',
+    this.nextSceneId,
+    this.choices = const [],
+    this.bloomFact,
+    this.myth,
+    this.fact,
+    this.completionMessage,
   });
 
-  factory StoryScene.fromJson(Map<String, dynamic> json) {
-    return StoryScene(
-      id: json['id'] as String,
-      backgroundImage: json['backgroundImage'] as String,
-      characterImage: json['characterImage'] as String,
-      characterId: (json['characterId'] as String?) ?? 'ananya',
-      characterExpression: (json['characterExpression'] as String?) ?? 'happy',
-      dialogue: json['dialogue'] as String,
-      choices: (json['choices'] as List)
-          .map((c) => StoryChoice.fromJson(c as Map<String, dynamic>))
-          .toList(),
-    );
-  }
+  bool get isDecision => type == StorySceneType.decision;
+  bool get isEnding => type == StorySceneType.bloomFact;
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'backgroundImage': backgroundImage,
-      'characterImage': characterImage,
-      'characterId': characterId,
-      'characterExpression': characterExpression,
-      'dialogue': dialogue,
-      'choices': choices.map((c) => c.toJson()).toList(),
-    };
-  }
+  factory StoryScene.fromJson(Map<String, dynamic> json) => StoryScene(
+    id: json['id'] as String,
+    type: StorySceneType.values.firstWhere(
+      (value) => value.name == json['type'],
+      orElse: () => StorySceneType.narrative,
+    ),
+    title: (json['title'] as String?) ?? '',
+    narration: (json['narration'] as String?) ?? '',
+    dialogue: (json['dialogue'] as String?) ?? '',
+    characterId: (json['characterId'] as String?) ?? 'ananya',
+    characterExpression: (json['characterExpression'] as String?) ?? 'happy',
+    visualDirection: (json['visualDirection'] as String?) ?? '',
+    animationDirection: (json['animationDirection'] as String?) ?? '',
+    nextSceneId: json['nextSceneId'] as String?,
+    choices: ((json['choices'] as List?) ?? const [])
+        .map((choice) => StoryChoice.fromJson(choice as Map<String, dynamic>))
+        .toList(),
+    bloomFact: json['bloomFact'] as String?,
+    myth: json['myth'] as String?,
+    fact: json['fact'] as String?,
+    completionMessage: json['completionMessage'] as String?,
+  );
 }
 
 class Story {
@@ -100,14 +100,17 @@ class Story {
   final String description;
   final String category;
   final String starringCharacterId;
+  final List<String> supportingCharacterIds;
   final int xpReward;
-  final String scenarioAsset;
-  final String choiceAsset;
-  final Map<StoryChoiceKey, String> consequenceAssets;
-  final Map<StoryChoiceKey, String> choiceSemanticLabels;
-  final String bloomFactAsset;
+  final List<String> learningObjectives;
   final List<StoryScene> scenes;
   final bool isCompleted;
+
+  // Compatibility fields for the existing book and cover widgets.
+  final String scenarioAsset;
+  final String choiceAsset;
+  final Map<Object, String> consequenceAssets;
+  final String bloomFactAsset;
 
   const Story({
     required this.id,
@@ -115,51 +118,41 @@ class Story {
     required this.description,
     required this.category,
     this.starringCharacterId = 'ananya',
+    this.supportingCharacterIds = const [],
     this.xpReward = 20,
-    required this.scenarioAsset,
-    required this.choiceAsset,
-    required this.consequenceAssets,
-    this.choiceSemanticLabels = const {
-      StoryChoiceKey.a: 'Choice A. Leave the kitchen immediately.',
-      StoryChoiceKey.b: 'Choice B. Continue helping normally.',
-      StoryChoiceKey.c: 'Choice C. Ask why menstruation would prevent you from cooking.',
-    },
-    required this.bloomFactAsset,
+    this.learningObjectives = const [],
     this.scenes = const [],
     this.isCompleted = false,
+    this.scenarioAsset = '',
+    this.choiceAsset = '',
+    this.consequenceAssets = const {},
+    this.bloomFactAsset = '',
   });
 
   String get coverImage => scenarioAsset;
+  StoryScene? get firstScene => scenes.isEmpty ? null : scenes.first;
 
-  Story copyWith({
-    String? id,
-    String? title,
-    String? description,
-    String? category,
-    String? starringCharacterId,
-    int? xpReward,
-    String? scenarioAsset,
-    String? choiceAsset,
-    Map<StoryChoiceKey, String>? consequenceAssets,
-    Map<StoryChoiceKey, String>? choiceSemanticLabels,
-    String? bloomFactAsset,
-    List<StoryScene>? scenes,
-    bool? isCompleted,
-  }) {
-    return Story(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      category: category ?? this.category,
-      starringCharacterId: starringCharacterId ?? this.starringCharacterId,
-      xpReward: xpReward ?? this.xpReward,
-      scenarioAsset: scenarioAsset ?? this.scenarioAsset,
-      choiceAsset: choiceAsset ?? this.choiceAsset,
-      consequenceAssets: consequenceAssets ?? this.consequenceAssets,
-      choiceSemanticLabels: choiceSemanticLabels ?? this.choiceSemanticLabels,
-      bloomFactAsset: bloomFactAsset ?? this.bloomFactAsset,
-      scenes: scenes ?? this.scenes,
-      isCompleted: isCompleted ?? this.isCompleted,
-    );
+  StoryScene? sceneById(String id) {
+    for (final scene in scenes) {
+      if (scene.id == id) return scene;
+    }
+    return null;
   }
+
+  Story copyWith({bool? isCompleted}) => Story(
+    id: id,
+    title: title,
+    description: description,
+    category: category,
+    starringCharacterId: starringCharacterId,
+    supportingCharacterIds: supportingCharacterIds,
+    xpReward: xpReward,
+    learningObjectives: learningObjectives,
+    scenes: scenes,
+    isCompleted: isCompleted ?? this.isCompleted,
+    scenarioAsset: scenarioAsset,
+    choiceAsset: choiceAsset,
+    consequenceAssets: consequenceAssets,
+    bloomFactAsset: bloomFactAsset,
+  );
 }

@@ -6,126 +6,872 @@ abstract class StoryService {
   Future<void> markStoryCompleted(String id);
 }
 
+StoryChoice c(String id, String text, String next) =>
+    StoryChoice(id: id, text: text, nextSceneId: next);
+
+StoryScene s(
+  String id,
+  String title,
+  String narration, {
+  String dialogue = '',
+  String avatar = 'ananya',
+  String expression = 'happy',
+  String? next,
+  StorySceneType type = StorySceneType.narrative,
+  List<StoryChoice> choices = const [],
+}) => StoryScene(
+  id: id,
+  title: title,
+  narration: narration,
+  dialogue: dialogue,
+  characterId: avatar,
+  characterExpression: expression,
+  nextSceneId: next,
+  type: type,
+  choices: choices,
+  visualDirection:
+      'Warm pastel storybook scene with $avatar in a natural, emotionally safe pose.',
+  animationDirection:
+      'Subtle blinking, gentle breathing, slight hair movement, and a small expression change.',
+);
+
+StoryScene end(
+  String avatar,
+  String bloomFact,
+  String myth,
+  String fact,
+  String completion,
+) => StoryScene(
+  id: 'ending',
+  type: StorySceneType.bloomFact,
+  title: 'A Bloom to Keep',
+  characterId: avatar,
+  characterExpression: 'celebrating',
+  narration: 'You reached the end of this story.',
+  bloomFact: bloomFact,
+  myth: myth,
+  fact: fact,
+  completionMessage: completion,
+  visualDirection:
+      'A soft flower opens around $avatar as the final fact appears.',
+  animationDirection:
+      'Gentle flower reveal, subtle hair movement, and a confident smile.',
+);
+
+const _portraits = {
+  'ananya': 'assets/images/avatar/ananya_portrait.png',
+  'meera': 'assets/images/avatar/meera_portrait.png',
+  'lavanya': 'assets/images/avatar/lavanya_portrait.png',
+};
+
+final List<Story> bloomStories = [
+  Story(
+    id: 'wait_is_that_my_period',
+    title: 'Wait… Is That My Period?',
+    category: 'First Period',
+    description:
+        'Ananya meets her first period with questions, support, and preparation.',
+    starringCharacterId: 'ananya',
+    scenarioAsset: _portraits['ananya']!,
+    learningObjectives: const [
+      'Understand that menstruation is a normal part of puberty.',
+      'Know that timing and early cycles can vary.',
+      'Ask a trusted adult for help.',
+      'Prepare without shame or worry.',
+    ],
+    scenes: [
+      s(
+        'opening',
+        'An Unexpected Morning',
+        'While getting ready for school, Ananya notices a reddish-brown stain on her underwear.',
+        dialogue: '“Wait… is this my period?”',
+        expression: 'concerned',
+        next: 'd1',
+      ),
+      s(
+        'd1',
+        'What should Ananya do?',
+        'She takes a breath and considers her next step.',
+        expression: 'thinking',
+        type: StorySceneType.decision,
+        choices: [
+          c('ask', 'Ask a trusted adult privately', 'a1'),
+          c('find', 'Look for a period product first', 'a2'),
+          c('hide', 'Hide it because she feels embarrassed', 'a3'),
+        ],
+      ),
+      s(
+        'a1',
+        'A Calm Answer',
+        'Her trusted adult listens, confirms this may be her first period, and brings a pad. Ananya’s shoulders relax.',
+        dialogue: '“That’s completely normal. We can work it out together.”',
+        expression: 'relieved',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a2',
+        'Partly Prepared',
+        'Ananya finds a pad but is unsure how to place it. Finding a product helps, and she realizes guidance would help too.',
+        expression: 'thinking',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a3',
+        'The Worry Stays',
+        'Ananya changes quickly, but the unanswered questions follow her toward breakfast.',
+        dialogue: '“Hiding it didn’t make me feel less worried.”',
+        expression: 'concerned',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'r1',
+        'A Gentle Reminder',
+        'Needing information is not embarrassing. Menstruation is a normal part of puberty, and bodies begin periods at different times.',
+        expression: 'calm',
+        type: StorySceneType.reflection,
+        next: 'd2',
+      ),
+      s(
+        'd2',
+        'Preparing for Next Time',
+        'Early cycles may not arrive on an exact schedule. What would help Ananya feel ready?',
+        expression: 'packing',
+        type: StorySceneType.decision,
+        choices: [
+          c('kit', 'Keep a small period kit in her bag', 'b1'),
+          c('track', 'Mark today privately on a calendar', 'b2'),
+          c('wait', 'Assume the next one will be on time', 'b3'),
+        ],
+      ),
+      s(
+        'b1',
+        'Ready in Her Bag',
+        'Ananya packs a pad, spare underwear, and a disposal bag. Uncertain timing feels manageable.',
+        expression: 'happy',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b2',
+        'Learning Her Pattern',
+        'When the next period comes on a different date, Ananya’s notes remind her that early cycles can vary.',
+        expression: 'journaling',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b3',
+        'Another Surprise',
+        'Her next period arrives on a different day. She manages it, then decides a spare product could help.',
+        expression: 'concerned',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'r2',
+        'Growing Confidence',
+        'Preparation is useful even when timing is uncertain.',
+        dialogue:
+            '“My period is part of growing up, and I don’t have to handle it alone.”',
+        expression: 'confident',
+        type: StorySceneType.reflection,
+        next: 'ending',
+      ),
+      end(
+        'ananya',
+        'First periods begin at different times, and early cycles may be irregular.',
+        'Everyone gets their first period at the same age.',
+        'Puberty follows a different timeline for each person.',
+        'You helped Ananya replace uncertainty with support and preparation.',
+      ),
+    ],
+  ),
+  Story(
+    id: 'first_period_at_school',
+    title: 'My First Period at School',
+    category: 'First Period',
+    description:
+        'An unexpected school-day period becomes easier when Ananya finds support.',
+    starringCharacterId: 'ananya',
+    scenarioAsset: _portraits['ananya']!,
+    learningObjectives: const [
+      'Know who can help at school.',
+      'Understand that leaks are not shameful.',
+      'Prepare a small emergency kit.',
+      'Build confidence for unexpected periods.',
+    ],
+    scenes: [
+      s(
+        'opening',
+        'During Class',
+        'Ananya realizes her period has started and notices a small mark on her uniform.',
+        dialogue: '“I’m surprised, but I can decide what to do next.”',
+        expression: 'concerned',
+        next: 'd1',
+      ),
+      s(
+        'd1',
+        'Who can help?',
+        'Ananya looks around the calm classroom.',
+        expression: 'thinking',
+        type: StorySceneType.decision,
+        choices: [
+          c('teacher', 'Ask her teacher privately', 'a1'),
+          c('friend', 'Whisper to her friend Riya', 'a2'),
+          c('alone', 'Try to handle everything alone', 'a3'),
+        ],
+      ),
+      s(
+        'a1',
+        'Quiet Support',
+        'Ms. Sen lets Ananya visit the nurse and offers a cardigan. Ananya feels protected, not singled out.',
+        expression: 'relieved',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a2',
+        'A Friend Beside Her',
+        'Riya lends her a pad and walks with her to the restroom. Ananya feels less alone.',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a3',
+        'Hard to Concentrate',
+        'Staying silent makes Ananya more distracted by the possible leak. Handling everything alone feels harder.',
+        expression: 'concerned',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'r1',
+        'Help Is Available',
+        'A teacher, nurse, friend, or another trusted adult may be able to offer a product and privacy.',
+        dialogue: '“That’s okay. Let’s get you what you need.”',
+        expression: 'calm',
+        type: StorySceneType.reflection,
+        next: 'd2',
+      ),
+      s(
+        'd2',
+        'What about the uniform mark?',
+        'A leak is a practical problem, not a personal failure.',
+        type: StorySceneType.decision,
+        choices: [
+          c('clothes', 'Ask the nurse for spare clothing', 'b1'),
+          c('cardigan', 'Tie a cardigan around her waist', 'b2'),
+          c('hide', 'Hide away for the rest of the day', 'b3'),
+        ],
+      ),
+      s(
+        'b1',
+        'Comfort Restored',
+        'The nurse finds a clean uniform item. Ananya returns to class comfortable and focused.',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b2',
+        'A Temporary Solution',
+        'The cardigan gives Ananya privacy until she can change later, so she continues her day.',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b3',
+        'The Day Feels Smaller',
+        'Waiting alone increases her worry. A kind staff member finds her and helps her return without fuss.',
+        expression: 'reassuring',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'r2',
+        'Ready, Not Worried',
+        'That evening, Ananya packs a pad, spare underwear, tissues, and a small disposal bag.',
+        dialogue: '“Unexpected doesn’t have to mean impossible.”',
+        expression: 'packing',
+        type: StorySceneType.reflection,
+        next: 'ending',
+      ),
+      end(
+        'ananya',
+        'At school, a trusted person may be able to provide a product, privacy, or spare clothing.',
+        'A period leak is something to be ashamed of.',
+        'Leaks happen and can be handled with practical support.',
+        'You helped Ananya find support and prepare for another school day.',
+      ),
+    ],
+  ),
+  Story(
+    id: 'what_should_i_eat',
+    title: 'What Should I Eat Today?',
+    category: 'Food & Energy',
+    description:
+        'Lavanya explores balanced eating without mysterious period food rules.',
+    starringCharacterId: 'lavanya',
+    scenarioAsset: _portraits['lavanya']!,
+    learningObjectives: const [
+      'Continue flexible, balanced eating.',
+      'Recognize useful iron-rich foods.',
+      'Remember hydration.',
+      'Listen to hunger, fullness, and comfort.',
+    ],
+    scenes: [
+      s(
+        'opening',
+        'The Lunchbox Question',
+        'Lavanya’s friend says, “You should only eat special foods when you’re on your period.”',
+        dialogue: '“Only special foods? That sounds like a very big rule.”',
+        avatar: 'lavanya',
+        expression: 'curious',
+        next: 'd1',
+      ),
+      s(
+        'd1',
+        'What does Lavanya eat?',
+        'She looks at the familiar food in her lunchbox.',
+        avatar: 'lavanya',
+        type: StorySceneType.decision,
+        choices: [
+          c('balanced', 'Choose a varied, balanced meal', 'a1'),
+          c('skip', 'Skip lunch because she is unsure', 'a2'),
+          c('one', 'Eat only one “special” food', 'a3'),
+        ],
+      ),
+      s(
+        'a1',
+        'Comfortably Satisfied',
+        'Lavanya enjoys grains, vegetables, and protein. Her familiar meal works perfectly well.',
+        avatar: 'lavanya',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a2',
+        'Hunger by Afternoon',
+        'Lavanya feels hungry and finds it harder to concentrate. The strict rule has not helped.',
+        avatar: 'lavanya',
+        expression: 'concerned',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a3',
+        'Still Hungry',
+        'The food is fine, but one ingredient cannot meet every need. Lavanya still wants a full meal.',
+        avatar: 'lavanya',
+        expression: 'thinking',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'r1',
+        'The Whole Meal',
+        'Beans, lentils, leafy vegetables, fortified cereals, eggs, or meat can provide iron within a varied diet. No single food is a cure.',
+        avatar: 'lavanya',
+        type: StorySceneType.reflection,
+        next: 'd2',
+      ),
+      s(
+        'd2',
+        'Afternoon Check-In',
+        'Lavanya notices that she is thirsty and a little hungry.',
+        avatar: 'lavanya',
+        type: StorySceneType.decision,
+        choices: [
+          c('both', 'Choose a snack and drink water', 'b1'),
+          c('ignore', 'Ignore the hunger', 'b2'),
+          c('water', 'Drink only water', 'b3'),
+        ],
+      ),
+      s(
+        'b1',
+        'Two Needs, Two Responses',
+        'Lavanya responds to hunger and thirst without expecting the snack to fix her period.',
+        avatar: 'lavanya',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b2',
+        'A Cue Worth Hearing',
+        'Her stomach keeps rumbling. Hunger can change from one day to another.',
+        avatar: 'lavanya',
+        expression: 'concerned',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b3',
+        'Hydrated, Yet Hungry',
+        'Water helps her thirst but not her hunger. Food and fluids meet different needs.',
+        avatar: 'lavanya',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'r2',
+        'Food Without Fear',
+        'Lavanya chooses variety while respecting appetite and comfort.',
+        dialogue: '“My period doesn’t require strange food rules.”',
+        avatar: 'lavanya',
+        type: StorySceneType.reflection,
+        next: 'ending',
+      ),
+      end(
+        'lavanya',
+        'Iron-rich foods can be useful parts of a varied diet, but no food is a period cure.',
+        'You must eat only special foods during your period.',
+        'Most people can continue balanced meals while responding to appetite and comfort.',
+        'You helped Lavanya choose nourishment and flexibility.',
+      ),
+    ],
+  ),
+  Story(
+    id: 'can_i_really_not_eat_that',
+    title: 'Can I Really Not Eat That?',
+    category: 'Food & Energy',
+    description:
+        'Lavanya questions a period food myth with curiosity and kindness.',
+    starringCharacterId: 'lavanya',
+    scenarioAsset: _portraits['lavanya']!,
+    learningObjectives: const [
+      'Question unsupported food rules.',
+      'Separate preference from universal claims.',
+      'Check trustworthy information.',
+      'Share facts without shaming.',
+    ],
+    scenes: [
+      s(
+        'opening',
+        'The Warning',
+        'At a family meal, Lavanya reaches for food she enjoys. Someone says, “You shouldn’t eat that on your period.”',
+        dialogue: '“Really? Why?”',
+        avatar: 'lavanya',
+        expression: 'curious',
+        next: 'd1',
+      ),
+      s(
+        'd1',
+        'How does Lavanya respond?',
+        'She wants to understand.',
+        avatar: 'lavanya',
+        type: StorySceneType.decision,
+        choices: [
+          c('believe', 'Believe the rule without questioning it', 'a1'),
+          c('why', 'Ask where the rule came from', 'a2'),
+          c('check', 'Check reliable information', 'a3'),
+        ],
+      ),
+      s(
+        'a1',
+        'An Unanswered Rule',
+        'Lavanya puts the food back but still wonders why. The rule makes her less confident, not safer.',
+        avatar: 'lavanya',
+        expression: 'concerned',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a2',
+        'A Family Tradition',
+        'The rule was passed down in the family. A familiar belief is not automatically reliable evidence.',
+        avatar: 'lavanya',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a3',
+        'A Trustworthy Source',
+        'A trusted adult helps her check adolescent health guidance. She investigates without starting an argument.',
+        avatar: 'lavanya',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'r1',
+        'Tradition or Evidence?',
+        'Ordinary foods are not automatically banned during periods. Asking why reveals whether a claim is evidence, tradition, or preference.',
+        avatar: 'lavanya',
+        type: StorySceneType.reflection,
+        next: 'd2',
+      ),
+      s(
+        'd2',
+        'What now?',
+        'Lavanya has accurate information and can still consider her comfort.',
+        avatar: 'lavanya',
+        type: StorySceneType.decision,
+        choices: [
+          c('enjoy', 'Eat it because she likes it', 'b1'),
+          c('prefer', 'Choose something else for comfort', 'b2'),
+          c('mock', 'Call everyone foolish', 'b3'),
+        ],
+      ),
+      s(
+        'b1',
+        'An Ordinary Meal',
+        'Lavanya enjoys the food. An ordinary experience makes the fear around the myth smaller.',
+        avatar: 'lavanya',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b2',
+        'A Personal Choice',
+        'Lavanya selects something else without calling the first food dangerous. Preference is not prohibition.',
+        avatar: 'lavanya',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b3',
+        'A Closed Conversation',
+        'People become defensive. Lavanya realizes facts are easier to share when people are treated respectfully.',
+        avatar: 'lavanya',
+        expression: 'concerned',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'r2',
+        'Curious and Kind',
+        'Lavanya keeps three questions: Who said it? What is the evidence? Is it a preference or a rule?',
+        dialogue: '“I can question a myth without being unkind.”',
+        avatar: 'lavanya',
+        type: StorySceneType.reflection,
+        next: 'ending',
+      ),
+      end(
+        'lavanya',
+        'People may prefer different foods, but periods do not automatically make ordinary foods forbidden.',
+        'One ordinary food must be avoided by everyone.',
+        'Preferences differ, while balanced eating can continue.',
+        'You helped Lavanya question a myth with confidence and kindness.',
+      ),
+    ],
+  ),
+  Story(
+    id: 'which_period_product',
+    title: 'Which Period Product Is Right for Me?',
+    category: 'Period Products',
+    description:
+        'Meera and Kiara compare product options before a school trip.',
+    starringCharacterId: 'meera',
+    supportingCharacterIds: const ['kiara'],
+    scenarioAsset: _portraits['meera']!,
+    learningObjectives: const [
+      'Recognize five product types.',
+      'Distinguish external and inserted products.',
+      'Compare disposable and reusable options.',
+      'Choose by comfort, access, and preference.',
+    ],
+    scenes: [
+      s(
+        'opening',
+        'The Packing Puzzle',
+        'Meera sees how many period products exist while packing for a school trip.',
+        dialogue:
+            'Meera: “Do I need all of these?”\nKiara: “Let’s learn what each one does.”',
+        avatar: 'meera',
+        expression: 'curious',
+        next: 'd1',
+      ),
+      s(
+        'd1',
+        'What matters most?',
+        'Meera chooses what to explore first.',
+        avatar: 'meera',
+        type: StorySceneType.decision,
+        choices: [
+          c('external', 'Something simple and external', 'a1'),
+          c('reusable', 'Something reusable', 'a2'),
+          c('all', 'Learn about every option', 'a3'),
+        ],
+      ),
+      s(
+        'a1',
+        'External Choices',
+        'Disposable pads, reusable pads, and period underwear are worn in or attached to underwear.',
+        avatar: 'kiara',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a2',
+        'Reusable Choices',
+        'Reusable pads, period underwear, and menstrual cups can be used again. Cleaning, drying, and storage matter.',
+        avatar: 'kiara',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a3',
+        'The Full Comparison',
+        'Pads and period underwear are external. Tampons absorb flow inside the vagina; inserted cups collect it.',
+        avatar: 'kiara',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'r1',
+        'No Universal Winner',
+        'Every option has use and care instructions. Personal priorities narrow choices without naming one “best.”',
+        avatar: 'meera',
+        type: StorySceneType.reflection,
+        next: 'd2',
+      ),
+      s(
+        'd2',
+        'Which trip situation?',
+        'Facilities and activities can affect convenience.',
+        avatar: 'meera',
+        type: StorySceneType.decision,
+        choices: [
+          c('bus', 'A long bus journey', 'b1'),
+          c('active', 'A day of hiking and games', 'b2'),
+          c('overnight', 'An overnight stay', 'b3'),
+        ],
+      ),
+      s(
+        'b1',
+        'Plan for Stops',
+        'Meera considers changing access and carrying clean and used items. She packs a familiar product.',
+        avatar: 'meera',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b2',
+        'Comfort in Motion',
+        'Meera compares comfort during movement and available facilities. Active days do not have one automatic answer.',
+        avatar: 'meera',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b3',
+        'Enough for the Stay',
+        'Meera checks changing and cleaning instructions and packs enough supplies.',
+        avatar: 'meera',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'r2',
+        'Five Helpful Questions',
+        'Is it comfortable? Accessible? Familiar? Can it be changed or cleaned safely? Does it suit this situation?',
+        dialogue: 'Meera: “That’s better than asking which one is best.”',
+        avatar: 'meera',
+        type: StorySceneType.reflection,
+        next: 'ending',
+      ),
+      end(
+        'meera',
+        'Product choice can change across days and situations.',
+        'Everyone should use the same period product.',
+        'Comfort, access, preference, correct use, and care influence the choice.',
+        'You helped Meera explore her options without pressure.',
+      ),
+    ],
+  ),
+  Story(
+    id: 'how_do_i_use_this',
+    title: 'How Do I Use This?',
+    category: 'Period Products',
+    description:
+        'Meera and Kiara learn calm, practical routines for period products.',
+    starringCharacterId: 'meera',
+    supportingCharacterIds: const ['kiara'],
+    scenarioAsset: _portraits['meera']!,
+    learningObjectives: const [
+      'Place, change, and dispose of a pad.',
+      'Never flush disposable pads.',
+      'Follow reusable product care instructions.',
+      'Use tampons and cups according to guidance.',
+    ],
+    scenes: [
+      s(
+        'opening',
+        'Which Side Goes Where?',
+        'Kiara uses clean spare underwear to demonstrate: the absorbent side faces the body; the sticky side attaches to underwear.',
+        dialogue: 'Meera: “The package diagram helps!”',
+        avatar: 'meera',
+        expression: 'curious',
+        next: 'd1',
+      ),
+      s(
+        'd1',
+        'The pad has wings',
+        'What should Meera do with them?',
+        avatar: 'meera',
+        type: StorySceneType.decision,
+        choices: [
+          c('fold', 'Fold them around the underwear', 'a1'),
+          c('up', 'Leave them pointing upward', 'a2'),
+          c('remove', 'Pull them off', 'a3'),
+        ],
+      ),
+      s(
+        'a1',
+        'Held in Place',
+        'The wings wrap underneath and help the pad stay steady during movement.',
+        avatar: 'meera',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a2',
+        'Awkward Fit',
+        'The pad does not sit neatly. Kiara helps reposition the wings underneath.',
+        avatar: 'kiara',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'a3',
+        'Try Again',
+        'The pad loses part of its securing design. Meera opens a fresh one and follows the diagram.',
+        avatar: 'meera',
+        type: StorySceneType.consequence,
+        next: 'r1',
+      ),
+      s(
+        'r1',
+        'Change for Comfort',
+        'Meera chooses suitable absorbency and changes the pad regularly, including when wet, full, or uncomfortable.',
+        avatar: 'kiara',
+        type: StorySceneType.reflection,
+        next: 'd2',
+      ),
+      s(
+        'd2',
+        'No bin in the stall',
+        'Meera needs a discreet disposal plan.',
+        avatar: 'meera',
+        type: StorySceneType.decision,
+        choices: [
+          c('outside', 'Wrap it and use the bin outside', 'b1'),
+          c('bag', 'Keep it wrapped in a disposal bag', 'b2'),
+          c('flush', 'Flush it so no one sees', 'b3'),
+        ],
+      ),
+      s(
+        'b1',
+        'Properly Disposed',
+        'Meera wraps the pad, carries it discreetly, and uses the designated bin.',
+        avatar: 'meera',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b2',
+        'A Temporary Plan',
+        'The sealed bag contains it until Meera finds an appropriate bin.',
+        avatar: 'meera',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'b3',
+        'Stop Before Flushing',
+        'Disposable pads can block plumbing. Meera wraps it and finds a bin instead.',
+        avatar: 'kiara',
+        type: StorySceneType.consequence,
+        next: 'r2',
+      ),
+      s(
+        'r2',
+        'Instructions Matter',
+        'Reusable pads and period underwear follow maker guidance. Cups are emptied and cleaned as directed. Tampons use the lowest absorbency needed and are changed every 4–8 hours—never longer than 8.',
+        avatar: 'kiara',
+        type: StorySceneType.reflection,
+        next: 'd3',
+      ),
+      s(
+        'd3',
+        'Trying something unfamiliar',
+        'Meera considers a new product for the trip.',
+        avatar: 'meera',
+        type: StorySceneType.decision,
+        choices: [
+          c('read', 'Read instructions and ask for help', 'c1'),
+          c('home', 'Practise at home first', 'c2'),
+          c('guess', 'Use it immediately without reading', 'c3'),
+        ],
+      ),
+      s(
+        'c1',
+        'Information First',
+        'Meera understands the steps and knows whom to approach if unsure.',
+        avatar: 'meera',
+        type: StorySceneType.consequence,
+        next: 'r3',
+      ),
+      s(
+        'c2',
+        'A Familiar Setting',
+        'Meera learns without trip-day pressure and can choose another option.',
+        avatar: 'meera',
+        type: StorySceneType.consequence,
+        next: 'r3',
+      ),
+      s(
+        'c3',
+        'Pause and Reset',
+        'The packaging is confusing. Meera returns to a familiar product until she can learn properly.',
+        avatar: 'meera',
+        type: StorySceneType.consequence,
+        next: 'r3',
+      ),
+      s(
+        'r3',
+        'Prepared, Not Perfect',
+        'Meera packs familiar products, spare underwear, disposal bags, and instructions.',
+        dialogue: '“I can ask for help if I need it.”',
+        avatar: 'meera',
+        type: StorySceneType.reflection,
+        next: 'ending',
+      ),
+      end(
+        'meera',
+        'Products work best when changed, cleaned, stored, and disposed of according to instructions.',
+        'Everyone automatically knows how to use a period product.',
+        'Product use is learned, and asking for guidance is reasonable.',
+        'You helped Meera turn instructions into practical confidence.',
+      ),
+    ],
+  ),
+];
+
 class MockStoryService implements StoryService {
   final Set<String> _completedStoryIds = {};
 
-  static const Story curdMythStory = Story(
-    id: 'curd_myth',
-    title: 'Can I Eat Curd During My Period?',
-    category: 'Myths',
-    description: 'Should you avoid curd during your period? Discover the science behind period food beliefs.',
-    starringCharacterId: 'ananya',
-    xpReward: 25,
-    scenarioAsset: 'assets/images/stories/curd_story_01_scenario_ananya.png',
-    choiceAsset: 'assets/images/stories/curd_story_02_choice_ananya.png',
-    consequenceAssets: {
-      StoryChoiceKey.a: 'assets/images/stories/curd_story_03_consequence_A_ananya.png',
-      StoryChoiceKey.b: 'assets/images/stories/curd_story_04_consequence_B_ananya.png',
-      StoryChoiceKey.c: 'assets/images/stories/curd_story_05_consequence_C_ananya.png',
-    },
-    choiceSemanticLabels: {
-      StoryChoiceKey.a: 'Choice A. Eat the curd because it is a normal food.',
-      StoryChoiceKey.b: 'Choice B. Avoid the curd because you are afraid it will affect your period.',
-      StoryChoiceKey.c: 'Choice C. Ask why you should avoid it before deciding.',
-    },
-    bloomFactAsset: 'assets/images/stories/curd_story_06_bloom_fact_ananya.png',
-  );
-
-  static const Story hairWashingMythStory = Story(
-    id: 'hair_washing_myth',
-    title: 'Can I Wash My Hair During My Period?',
-    category: 'Myths',
-    description: 'Discover the truth about hair washing and bathing during your period.',
-    starringCharacterId: 'meera',
-    xpReward: 25,
-    scenarioAsset: 'assets/images/stories/myth_story_01_scenario_ananya.png',
-    choiceAsset: 'assets/images/stories/myth_story_02_choice_ananya.png',
-    consequenceAssets: {
-      StoryChoiceKey.a: 'assets/images/stories/myth_story_03_consequence_A_ananya.png',
-      StoryChoiceKey.b: 'assets/images/stories/myth_story_04_consequence_B_ananya.png',
-      StoryChoiceKey.c: 'assets/images/stories/myth_story_05_consequence_C_ananya.png',
-    },
-    choiceSemanticLabels: {
-      StoryChoiceKey.a: 'Choice A. Take a warm shower and wash your hair normally.',
-      StoryChoiceKey.b: 'Choice B. Wait until your period is over before washing your hair.',
-      StoryChoiceKey.c: 'Choice C. Ask Meera why people believe hair washing is harmful.',
-    },
-    bloomFactAsset: 'assets/images/stories/myth_story_06_bloom_fact_ananya.png',
-  );
-
-  static const Story exerciseMythStory = Story(
-    id: 'exercise_myth',
-    title: 'Should I Avoid Exercise During My Period?',
-    category: 'Myths',
-    description: 'Learn how gentle physical activity affects period cramps and energy levels.',
-    starringCharacterId: 'kiara',
-    xpReward: 25,
-    scenarioAsset: 'assets/images/stories/curd_story_01_scenario_ananya.png',
-    choiceAsset: 'assets/images/stories/curd_story_02_choice_ananya.png',
-    consequenceAssets: {
-      StoryChoiceKey.a: 'assets/images/stories/curd_story_03_consequence_A_ananya.png',
-      StoryChoiceKey.b: 'assets/images/stories/curd_story_04_consequence_B_ananya.png',
-      StoryChoiceKey.c: 'assets/images/stories/curd_story_05_consequence_C_ananya.png',
-    },
-    choiceSemanticLabels: {
-      StoryChoiceKey.a: 'Choice A. Go for a light walk or do gentle stretching.',
-      StoryChoiceKey.b: 'Choice B. Stay completely still in bed all day.',
-      StoryChoiceKey.c: 'Choice C. Ask Kiara what exercises feel best during your cycle.',
-    },
-    bloomFactAsset: 'assets/images/stories/curd_story_06_bloom_fact_ananya.png',
-  );
-
-  static const Story burstingMythsStory = Story(
-    id: 'bursting_myths',
-    title: 'Bursting Myths',
-    category: 'Myths',
-    description: 'Challenge a common menstrual myth and discover what the facts really say.',
-    starringCharacterId: 'ananya',
-    xpReward: 20,
-    scenarioAsset: 'assets/images/stories/myth_story_01_scenario_ananya.png',
-    choiceAsset: 'assets/images/stories/myth_story_02_choice_ananya.png',
-    consequenceAssets: {
-      StoryChoiceKey.a: 'assets/images/stories/myth_story_03_consequence_A_ananya.png',
-      StoryChoiceKey.b: 'assets/images/stories/myth_story_04_consequence_B_ananya.png',
-      StoryChoiceKey.c: 'assets/images/stories/myth_story_05_consequence_C_ananya.png',
-    },
-    choiceSemanticLabels: {
-      StoryChoiceKey.a: 'Choice A. Leave the kitchen immediately.',
-      StoryChoiceKey.b: 'Choice B. Continue helping normally.',
-      StoryChoiceKey.c: 'Choice C. Ask why menstruation would prevent you from cooking.',
-    },
-    bloomFactAsset: 'assets/images/stories/myth_story_06_bloom_fact_ananya.png',
-  );
-
   @override
-  Future<List<Story>> getStories() async {
-    return [
-      curdMythStory.copyWith(
-        isCompleted: _completedStoryIds.contains('curd_myth'),
-      ),
-      hairWashingMythStory.copyWith(
-        isCompleted: _completedStoryIds.contains('hair_washing_myth'),
-      ),
-      exerciseMythStory.copyWith(
-        isCompleted: _completedStoryIds.contains('exercise_myth'),
-      ),
-      burstingMythsStory.copyWith(
-        isCompleted: _completedStoryIds.contains('bursting_myths'),
-      ),
-    ];
-  }
+  Future<List<Story>> getStories() async => bloomStories
+      .map(
+        (story) =>
+            story.copyWith(isCompleted: _completedStoryIds.contains(story.id)),
+      )
+      .toList(growable: false);
 
   @override
   Future<Story?> getStoryById(String id) async {
-    final stories = await getStories();
-    return stories.firstWhere(
-      (s) => s.id == id,
-      orElse: () => stories.first,
-    );
+    for (final story in await getStories()) {
+      if (story.id == id) return story;
+    }
+    return null;
   }
 
   @override
   Future<void> markStoryCompleted(String id) async {
-    _completedStoryIds.add(id);
+    if (bloomStories.any((story) => story.id == id)) {
+      _completedStoryIds.add(id);
+    }
   }
 }

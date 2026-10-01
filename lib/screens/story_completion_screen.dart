@@ -20,13 +20,17 @@ class StoryCompletionScreen extends ConsumerWidget {
           child: Column(
             children: [
               const Spacer(),
-              const AvatarWidget(expression: 'confident', size: 140, showBadge: true),
+              const AvatarWidget(
+                expression: 'confident',
+                size: 140,
+                showBadge: true,
+              ),
               const SizedBox(height: 28),
               Text(
                 'Story Completed!',
                 style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: BloomTheme.primaryRose,
-                    ),
+                  color: BloomTheme.primaryRose,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
@@ -54,13 +58,7 @@ class StoryCompletionScreen extends ConsumerWidget {
               const Spacer(),
               BloomButton(
                 text: 'Return to Storybook 📖',
-                onPressed: () {
-                  if (context.canPop()) {
-                    context.pop();
-                  } else {
-                    context.go('/books/bursting_myths');
-                  }
-                },
+                onPressed: () => context.go('/stories'),
               ),
               const SizedBox(height: 12),
               BloomButton(

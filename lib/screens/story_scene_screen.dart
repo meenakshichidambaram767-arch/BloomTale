@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../app/theme.dart';
+
 import '../app/providers.dart';
+import '../app/theme.dart';
 import '../models/story.dart';
-import '../services/story_service.dart';
+import '../widgets/bloom_avatar.dart';
+import '../widgets/bloom_button.dart';
+import '../widgets/bloom_card.dart';
 
 class StorySceneScreen extends ConsumerStatefulWidget {
   final String storyId;
+
   const StorySceneScreen({super.key, required this.storyId});
 
   @override
@@ -15,104 +19,77 @@ class StorySceneScreen extends ConsumerStatefulWidget {
 }
 
 class _StorySceneScreenState extends ConsumerState<StorySceneScreen> {
-  StoryStage _currentStage = StoryStage.scenario;
-  StoryChoiceKey? _selectedChoice;
+  late Future<Story?> _storyFuture;
+  String? _currentSceneId;
+  final List<String> _history = [];
+  bool _completing = false;
 
-  void _onChoiceSelected(StoryChoiceKey choiceKey) {
-    setState(() {
-      _selectedChoice = choiceKey;
-      _currentStage = StoryStage.consequence;
-    });
+  @override
+  void initState() {
+    super.initState();
+    _storyFuture = ref
+        .read(storyRepositoryProvider)
+        .getStoryById(widget.storyId);
   }
 
-  void _nextStage() {
-    setState(() {
-      switch (_currentStage) {
-        case StoryStage.scenario:
-          _currentStage = StoryStage.choice;
-          break;
-        case StoryStage.choice:
-          // Must select a choice on choice screen before progressing
-          break;
-        case StoryStage.consequence:
-          _currentStage = StoryStage.bloomFact;
-          break;
-        case StoryStage.bloomFact:
-          _completeStory();
-          break;
-        case StoryStage.completed:
-          break;
-      }
-    });
+  void _goTo(Story story, String sceneId) {
+    if (story.sceneById(sceneId) == null) return;
+    final current = _currentSceneId ?? story.firstScene?.id;
+    if (current != null) _history.add(current);
+    setState(() => _currentSceneId = sceneId);
   }
 
-  void _previousStage() {
-    setState(() {
-      switch (_currentStage) {
-        case StoryStage.scenario:
-          context.pop();
-          break;
-        case StoryStage.choice:
-          _currentStage = StoryStage.scenario;
-          break;
-        case StoryStage.consequence:
-          _currentStage = StoryStage.choice;
-          break;
-        case StoryStage.bloomFact:
-          _currentStage = StoryStage.consequence;
-          break;
-        case StoryStage.completed:
-          _currentStage = StoryStage.bloomFact;
-          break;
-      }
-    });
+  void _goBack(Story story) {
+    if (_history.isEmpty) {
+      context.pop();
+      return;
+    }
+    setState(() => _currentSceneId = _history.removeLast());
   }
 
-  Future<void> _completeStory() async {
-    final storyRepo = ref.read(storyRepositoryProvider);
-    await storyRepo.markStoryCompleted(widget.storyId);
-    ref.read(userProvider.notifier).addXp(20);
+  Future<void> _complete(Story story) async {
+    if (_completing) return;
+    setState(() => _completing = true);
+    await ref.read(storyRepositoryProvider).markStoryCompleted(story.id);
+    ref.read(userProvider.notifier).addXp(story.xpReward);
+    ref.invalidate(storyListProvider);
+    if (mounted) context.go('/stories/${story.id}/completion');
+  }
 
-    if (mounted) {
-      context.go('/stories/${widget.storyId}/completion');
+  Color _sceneColor(StorySceneType type) {
+    switch (type) {
+      case StorySceneType.decision:
+        return BloomTheme.accentLavender;
+      case StorySceneType.consequence:
+        return BloomTheme.secondaryPeach.withValues(alpha: 0.55);
+      case StorySceneType.reflection:
+        return BloomTheme.mintFresh.withValues(alpha: 0.55);
+      case StorySceneType.bloomFact:
+        return BloomTheme.primaryRose.withValues(alpha: 0.12);
+      case StorySceneType.narrative:
+        return Colors.white;
     }
   }
 
-  String _getActiveAsset(Story story) {
-    switch (_currentStage) {
-      case StoryStage.scenario:
-        return story.scenarioAsset;
-      case StoryStage.choice:
-        return story.choiceAsset;
-      case StoryStage.consequence:
-        if (_selectedChoice == null) return story.scenarioAsset;
-        return story.consequenceAssets[_selectedChoice!] ?? story.scenarioAsset;
-      case StoryStage.bloomFact:
-      case StoryStage.completed:
-        return story.bloomFactAsset;
-    }
-  }
-
-  int _getStepNumber() {
-    switch (_currentStage) {
-      case StoryStage.scenario:
-        return 1;
-      case StoryStage.choice:
-        return 2;
-      case StoryStage.consequence:
-        return 3;
-      case StoryStage.bloomFact:
-      case StoryStage.completed:
-        return 4;
+  String _sceneLabel(StorySceneType type) {
+    switch (type) {
+      case StorySceneType.decision:
+        return 'YOUR CHOICE';
+      case StorySceneType.consequence:
+        return 'WHAT HAPPENS NEXT';
+      case StorySceneType.reflection:
+        return 'PAUSE & REFLECT';
+      case StorySceneType.bloomFact:
+        return 'BLOOM FACT';
+      case StorySceneType.narrative:
+        return 'STORY';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final storyRepo = ref.watch(storyRepositoryProvider);
-
     return FutureBuilder<Story?>(
-      future: storyRepo.getStoryById(widget.storyId),
+      future: _storyFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -120,253 +97,271 @@ class _StorySceneScreenState extends ConsumerState<StorySceneScreen> {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-
         final story = snapshot.data;
-        if (story == null) {
+        if (story == null || story.firstScene == null) {
           return Scaffold(
             backgroundColor: BloomTheme.softCream,
-            appBar: AppBar(title: const Text('Story')),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Story illustration unavailable.'),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () => setState(() {}),
-                    child: const Text('Try Again'),
-                  )
-                ],
-              ),
-            ),
+            appBar: AppBar(title: const Text('Story unavailable')),
+            body: const Center(child: Text('This story could not be loaded.')),
           );
         }
 
-        final activeAsset = _getActiveAsset(story);
-        final currentStep = _getStepNumber();
+        final scene =
+            story.sceneById(_currentSceneId ?? story.firstScene!.id) ??
+            story.firstScene!;
+        final progress = ((_history.length + 1) / 8)
+            .clamp(0.08, 1.0)
+            .toDouble();
 
         return Scaffold(
           backgroundColor: BloomTheme.softCream,
           body: SafeArea(
             child: Column(
               children: [
-                // Top Navigation Header
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: BloomTheme.darkText),
-                        onPressed: _previousStage,
+                        onPressed: () => _goBack(story),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded),
                       ),
-                      const SizedBox(width: 8),
-                      // Progress dots
                       Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(4, (index) {
-                            final stepIndex = index + 1;
-                            final isActive = stepIndex == currentStep;
-                            final isCompleted = stepIndex < currentStep;
-
-                            return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              width: isActive ? 24 : 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: isActive
-                                    ? BloomTheme.primaryRose
-                                    : isCompleted
-                                        ? BloomTheme.primaryRose.withValues(alpha: 0.5)
-                                        : BloomTheme.subText.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(5),
+                        child: Column(
+                          children: [
+                            Text(
+                              story.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
                               ),
-                            );
-                          }),
+                            ),
+                            const SizedBox(height: 7),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: LinearProgressIndicator(
+                                value: scene.isEnding ? 1 : progress,
+                                minHeight: 7,
+                                backgroundColor: BloomTheme.primaryRose
+                                    .withValues(alpha: .1),
+                                color: BloomTheme.primaryRose,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: BloomTheme.darkText),
                         onPressed: () => context.pop(),
+                        icon: const Icon(Icons.close_rounded),
                       ),
                     ],
                   ),
                 ),
-
-                // Main Story Display Container
                 Expanded(
-                  child: GestureDetector(
-                    onHorizontalDragEnd: (details) {
-                      if (details.primaryVelocity != null) {
-                        if (details.primaryVelocity! < -200) {
-                          // Swipe left (forward)
-                          if (_currentStage != StoryStage.choice) {
-                            _nextStage();
-                          }
-                        } else if (details.primaryVelocity! > 200) {
-                          // Swipe right (backward)
-                          _previousStage();
-                        }
-                      }
-                    },
-                    child: Center(
-                      child: AspectRatio(
-                        aspectRatio: 1365 / 2048,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return Stack(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: SingleChildScrollView(
+                      key: ValueKey(scene.id),
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _sceneColor(scene.type),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _sceneLabel(scene.type),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1,
+                                color: BloomTheme.darkText,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          BloomAvatar(
+                            avatarId: scene.characterId,
+                            activity: scene.type == StorySceneType.decision
+                                ? 'reading'
+                                : 'cozy',
+                            size: 132,
+                            showBadge: scene.isEnding,
+                          ),
+                          const SizedBox(height: 18),
+                          Text(
+                            scene.title,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headlineMedium
+                                ?.copyWith(
+                                  color: BloomTheme.darkText,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          const SizedBox(height: 14),
+                          BloomCard(
+                            backgroundColor: _sceneColor(scene.type),
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // Full Story Screen Image
-                                Positioned.fill(
-                                  child: Image.asset(
-                                    activeAsset,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        color: Colors.grey[200],
-                                        child: const Center(
-                                          child: Text('Story illustration unavailable.'),
-                                        ),
-                                      );
-                                    },
+                                Text(
+                                  scene.narration,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    height: 1.45,
+                                    color: BloomTheme.darkText,
                                   ),
                                 ),
-
-                                // Interactive Choice Overlays (Only on Choice Stage)
-                                if (_currentStage == StoryStage.choice) ...[
-                                  // Choice A Hit Target
-                                  Positioned(
-                                    top: constraints.maxHeight * 0.26,
-                                    height: constraints.maxHeight * 0.17,
-                                    left: constraints.maxWidth * 0.33,
-                                    right: constraints.maxWidth * 0.05,
-                                    child: Semantics(
-                                      button: true,
-                                      label: story.choiceSemanticLabels[StoryChoiceKey.a] ??
-                                          'Choice A. Leave the kitchen immediately.',
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          borderRadius: BorderRadius.circular(16),
-                                          splashColor: BloomTheme.primaryRose.withValues(alpha: 0.15),
-                                          highlightColor: BloomTheme.primaryRose.withValues(alpha: 0.1),
-                                          onTap: () => _onChoiceSelected(StoryChoiceKey.a),
-                                        ),
+                                if (scene.dialogue.isNotEmpty) ...[
+                                  const SizedBox(height: 16),
+                                  Container(
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: .72,
                                       ),
+                                      borderRadius: BorderRadius.circular(15),
                                     ),
-                                  ),
-
-                                  // Choice B Hit Target
-                                  Positioned(
-                                    top: constraints.maxHeight * 0.46,
-                                    height: constraints.maxHeight * 0.17,
-                                    left: constraints.maxWidth * 0.33,
-                                    right: constraints.maxWidth * 0.05,
-                                    child: Semantics(
-                                      button: true,
-                                      label: story.choiceSemanticLabels[StoryChoiceKey.b] ??
-                                          'Choice B. Continue helping normally.',
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          borderRadius: BorderRadius.circular(16),
-                                          splashColor: BloomTheme.mintFresh.withValues(alpha: 0.2),
-                                          highlightColor: BloomTheme.mintFresh.withValues(alpha: 0.1),
-                                          onTap: () => _onChoiceSelected(StoryChoiceKey.b),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-
-                                  // Choice C Hit Target
-                                  Positioned(
-                                    top: constraints.maxHeight * 0.66,
-                                    height: constraints.maxHeight * 0.20,
-                                    left: constraints.maxWidth * 0.33,
-                                    right: constraints.maxWidth * 0.05,
-                                    child: Semantics(
-                                      button: true,
-                                      label: story.choiceSemanticLabels[StoryChoiceKey.c] ??
-                                          'Choice C. Ask why menstruation would prevent you from cooking.',
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          borderRadius: BorderRadius.circular(16),
-                                          splashColor: BloomTheme.accentLavender.withValues(alpha: 0.25),
-                                          highlightColor: BloomTheme.accentLavender.withValues(alpha: 0.1),
-                                          onTap: () => _onChoiceSelected(StoryChoiceKey.c),
-                                        ),
+                                    child: Text(
+                                      scene.dialogue,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        height: 1.4,
+                                        fontStyle: FontStyle.italic,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
                                 ],
+                                if (scene.isEnding) ...[
+                                  const SizedBox(height: 18),
+                                  _FactTile(
+                                    icon: Icons.local_florist_rounded,
+                                    title: 'Bloom Fact',
+                                    text: scene.bloomFact ?? '',
+                                    color: BloomTheme.mintFresh,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  _FactTile(
+                                    icon: Icons.close_rounded,
+                                    title: 'Myth',
+                                    text: scene.myth ?? '',
+                                    color: BloomTheme.secondaryPeach,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  _FactTile(
+                                    icon: Icons.check_rounded,
+                                    title: 'Fact',
+                                    text: scene.fact ?? '',
+                                    color: BloomTheme.accentLavender,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    scene.completionMessage ?? '',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
                               ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Bottom Action Bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  child: Row(
-                    children: [
-                      if (_currentStage != StoryStage.choice) ...[
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: BloomTheme.primaryRose,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 0,
                             ),
-                            onPressed: _nextStage,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  _currentStage == StoryStage.bloomFact
-                                      ? 'Complete Story'
-                                      : 'Continue',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                          ),
+                          if (scene.isDecision) ...[
+                            const SizedBox(height: 18),
+                            ...scene.choices.asMap().entries.map(
+                              (entry) => Padding(
+                                padding: const EdgeInsets.only(bottom: 11),
+                                child: Semantics(
+                                  button: true,
+                                  label:
+                                      'Choice ${entry.key + 1}: ${entry.value.text}',
+                                  child: OutlinedButton(
+                                    onPressed: () =>
+                                        _goTo(story, entry.value.nextSceneId),
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 18,
+                                        vertical: 16,
+                                      ),
+                                      alignment: Alignment.centerLeft,
+                                      backgroundColor: Colors.white,
+                                      side: BorderSide(
+                                        color: BloomTheme.primaryRose
+                                            .withValues(alpha: .35),
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(17),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 14,
+                                          backgroundColor:
+                                              BloomTheme.primaryRose,
+                                          child: Text(
+                                            String.fromCharCode(65 + entry.key),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            entry.value.text,
+                                            style: const TextStyle(
+                                              color: BloomTheme.darkText,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Icon(
-                                  _currentStage == StoryStage.bloomFact
-                                      ? Icons.check_circle_rounded
-                                      : Icons.arrow_forward_rounded,
-                                  size: 20,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ] else ...[
-                        Expanded(
-                          child: Container(
-                            alignment: Alignment.center,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: const Text(
-                              'Tap Choice A, B, or C above to continue',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: BloomTheme.subText,
                               ),
                             ),
-                          ),
-                        ),
-                      ],
-                    ],
+                          ] else ...[
+                            const SizedBox(height: 20),
+                            BloomButton(
+                              text: scene.isEnding
+                                  ? (_completing
+                                        ? 'Completing…'
+                                        : 'Complete Story')
+                                  : 'Continue',
+                              icon: scene.isEnding
+                                  ? Icons.check_circle_rounded
+                                  : Icons.arrow_forward_rounded,
+                              onPressed: _completing
+                                  ? null
+                                  : () {
+                                      if (scene.isEnding) {
+                                        _complete(story);
+                                      } else if (scene.nextSceneId != null) {
+                                        _goTo(story, scene.nextSceneId!);
+                                      }
+                                    },
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -374,6 +369,52 @@ class _StorySceneScreenState extends ConsumerState<StorySceneScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class _FactTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String text;
+  final Color color;
+
+  const _FactTile({
+    required this.icon,
+    required this.title,
+    required this.text,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(13),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .65),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: BloomTheme.darkText),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$title: ',
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  TextSpan(text: text),
+                ],
+              ),
+              style: const TextStyle(color: BloomTheme.darkText, height: 1.35),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
